@@ -1,0 +1,1224 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bestiario Urbano Bogotá</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#141a2b; --panel:#1f2840; --panel2:#283352; --ink:#f4f1e8; --muted:#a9b2cc;
+  --line:#3b4870; --accent:#ffcf4a; --good:#4cd38a; --bad:#ff6b5e; --info:#6cb8ff;
+  --pix:"Pixelify Sans", monospace; --txt:"Nunito", system-ui, sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--txt);font-size:16px}
+button{font-family:inherit;cursor:pointer}
+html,body{height:100%;overflow:hidden}
+#app{position:fixed;inset:0}
+.hud{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;background:linear-gradient(rgba(14,18,34,.88),rgba(14,18,34,.55) 70%,rgba(14,18,34,0))}
+.brand{font-family:var(--pix);font-size:18px;color:var(--accent);letter-spacing:1px}
+.team{display:flex;gap:4px;flex:1;min-width:120px;align-items:center}
+.team img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid var(--good)}
+.team .empty{width:30px;height:30px;border-radius:50%;border:2px dashed var(--line)}
+.team .count{font-family:var(--pix);font-size:14px;color:var(--muted);margin-left:6px}
+.hud-btns{display:flex;gap:6px}
+.btn{background:var(--panel2);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:8px 12px;font-weight:800;font-size:14px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#1b1b1b;border-color:var(--accent)}
+.stage{position:absolute;inset:0;overflow:hidden;background:#dbe7fd}
+#map{display:block;width:100%;height:100%;image-rendering:pixelated;touch-action:none;cursor:pointer}
+.credit{position:absolute;right:10px;bottom:8px;z-index:4;font-size:12px;color:#1d2440;background:rgba(255,255,255,.75);padding:3px 8px;border-radius:8px}
+.dlg{max-width:820px;margin:0 auto}
+.dlg{position:absolute;left:10px;right:10px;bottom:10px;background:#fffdf5;color:#1d1d1d;border:4px solid #1d1d1d;border-radius:10px;padding:14px 40px 14px 16px;font-size:16px;line-height:1.45;font-weight:700;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.dlg .who{font-family:var(--pix);font-size:14px;color:#b5523b;display:block;margin-bottom:6px}
+.next{position:absolute;right:14px;bottom:10px;animation:blink 1s steps(2) infinite;font-size:14px}
+@keyframes blink{50%{opacity:0}}
+
+
+/* Pantallas completas */
+.screen{position:fixed;inset:0;z-index:20;overflow:auto;background:rgba(10,14,26,.94);display:flex;align-items:flex-start;justify-content:center;padding:16px}
+#title{background:radial-gradient(circle at 50% 30%,#2b3a66,#0e1222 70%);align-items:center}
+.title-card{max-width:620px;text-align:center}
+.title-card h1{font-family:var(--pix);font-size:clamp(20px,5vw,34px);line-height:1.4;color:var(--accent);margin:0 0 10px;text-shadow:0 4px 0 #8a5a00}
+.title-card .sub{font-family:var(--pix);font-size:16px;color:var(--good);margin-bottom:18px;line-height:1.6}
+.title-card p{color:var(--muted);line-height:1.5}
+.title-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:18px 0}
+.title-strip img{width:min(13.5vw,84px);aspect-ratio:1;object-fit:cover;border-radius:10px;border:3px solid var(--line)}
+.title-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+/* Portada */
+#cover{position:fixed;inset:0;z-index:40;background:#0b0820;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:10px 0 76px;outline:none}
+#cover[hidden]{display:none}
+.cover-bg{position:absolute;inset:-40px;width:calc(100% + 80px);height:calc(100% + 80px);object-fit:cover;filter:blur(24px) brightness(.45)}
+.cover-img{position:relative;max-width:100%;max-height:100%;min-height:0;object-fit:contain;image-rendering:pixelated;box-shadow:0 0 60px rgba(0,0,0,.6)}
+.cover-prompt{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font-family:var(--pix);font-size:clamp(14px,2.6vw,22px);color:#fff;background:rgba(20,10,50,.82);border:3px solid #ff4fd8;box-shadow:0 0 0 3px #3de0ff,0 6px 0 rgba(0,0,0,.4);border-radius:10px;padding:10px 18px;white-space:nowrap;animation:blink 1.1s steps(2) infinite}
+.cover-prompt.sound{animation:none;border-color:#ffcf4a}
+
+/* Combate */
+.battle .b-wrap{width:100%;max-width:820px}
+.b-top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px}
+.b-card{position:relative;border:4px solid var(--bad);border-radius:14px;overflow:hidden;background:#000;transition:border-color .4s}
+.b-card.calm{border-color:var(--good)}
+.b-card img{display:block;width:100%;aspect-ratio:1/1;max-height:44vh;object-fit:cover}
+.b-card .tag{position:absolute;left:8px;top:8px;font-family:var(--pix);font-size:13px;background:var(--bad);color:#fff;padding:6px 8px;border-radius:6px}
+.b-card.calm .tag{background:var(--good);color:#0d2a1a}
+.b-card.shake{animation:shake .35s}
+.b-card.flash-good::after,.b-card.flash-bad::after{content:"";position:absolute;inset:0;animation:fl .5s forwards}
+.b-card.flash-good::after{background:rgba(76,211,138,.55)}
+.b-card.flash-bad::after{background:rgba(255,107,94,.55)}
+@keyframes fl{to{opacity:0}}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.b-info{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:14px}
+.b-name{font-family:var(--pix);font-size:19px;line-height:1.5}
+.p-head{display:flex;align-items:center;gap:10px}
+.p-head img{width:56px;height:56px;object-fit:contain;image-rendering:pixelated;background:var(--panel2);border:2px solid var(--line);border-radius:10px;padding:3px}
+.b-name.small{font-size:14px;color:var(--info)}
+.b-sci{font-style:italic;color:var(--muted);font-size:14px;margin:2px 0 10px}
+.bar-label{font-family:var(--pix);font-size:13px;color:var(--muted);margin:8px 0 5px;display:flex;justify-content:space-between}
+.bar{height:14px;background:#0c1020;border:2px solid #0c1020;border-radius:8px;overflow:hidden}
+.bar i{display:block;height:100%;transition:width .5s;border-radius:5px}
+.bar.enojo i{background:linear-gradient(90deg,#ff9f43,var(--bad))}
+.bar.pac i{background:linear-gradient(90deg,#6cb8ff,var(--good))}
+.steps{display:flex;gap:6px;align-items:center;margin-top:10px;font-size:13px;color:var(--muted)}
+.steps b{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);display:inline-block}
+.steps b.on{background:var(--good);border-color:var(--good)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:12px;font-weight:800;padding:3px 8px;border-radius:20px;background:var(--panel2);border:1px solid var(--line)}
+.chip.bad{border-color:var(--bad);color:#ffb3ab}.chip.good{border-color:var(--good);color:#b6f5d2}
+.b-info hr{border:0;border-top:2px dashed var(--line);margin:14px 0 10px}
+.msg{margin-top:14px;background:#fffdf5;color:#1d1d1d;border:4px solid #1d1d1d;border-radius:12px;padding:14px 40px 14px 16px;min-height:84px;font-size:17px;line-height:1.5;font-weight:700;position:relative}
+.msg.wait{cursor:pointer}
+.msg.wait::after{content:"▶";position:absolute;right:14px;bottom:10px;animation:blink 1s steps(2) infinite}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.actions button{padding:14px;font-size:17px;font-weight:800;border-radius:12px;background:var(--panel2);color:var(--ink);border:3px solid var(--line)}
+.actions button:hover,.actions button:focus-visible{border-color:var(--accent);outline:none}
+.submenu{margin-top:12px;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px}
+.submenu .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-family:var(--pix);font-size:14px;color:var(--accent)}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.items button{display:flex;gap:8px;align-items:flex-start;text-align:left;background:var(--panel2);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:8px}
+.items button:hover:not(:disabled){border-color:var(--accent)}
+.items button:disabled{opacity:.45;cursor:not-allowed}
+.items .ic{font-size:24px;line-height:1}
+.items .nm{font-weight:800;font-size:14px;line-height:1.2}
+.items .en{font-size:12px;color:var(--muted)}
+.items img{width:36px;height:36px;border-radius:50%;object-fit:cover}
+
+/* Modales */
+.modal-card{background:var(--panel);border:3px solid var(--line);border-radius:16px;padding:20px;width:100%;max-width:760px;margin:auto 0;position:relative}
+.modal-card h2{font-family:var(--pix);font-size:21px;color:var(--accent);margin:0 0 14px;line-height:1.5}
+.modal-card h3{font-size:17px;margin:16px 0 6px}
+.modal-card p,.modal-card li{line-height:1.55}
+.close{position:absolute;right:12px;top:12px}
+.quiz-opts{display:grid;gap:8px;margin-top:12px}
+.quiz-opts button{text-align:left;padding:12px 14px;border-radius:10px;border:3px solid var(--line);background:var(--panel2);color:var(--ink);font-size:16px;font-weight:700}
+.quiz-opts button.ok{border-color:var(--good);background:#1d4a35}
+.quiz-opts button.no{border-color:var(--bad);background:#4a1f1d}
+.fb{margin-top:12px;padding:12px;border-radius:10px;background:var(--panel2);line-height:1.5}
+.dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.dex button{background:var(--panel2);border:3px solid var(--line);border-radius:12px;padding:8px;color:var(--ink);text-align:center}
+.dex button:hover{border-color:var(--accent)}
+.dex img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block}
+.dex .unk img{filter:brightness(0) opacity(.6)}
+.dex .nm{font-weight:800;margin-top:6px}
+.dex .st{font-size:12px;color:var(--muted)}
+.dex .done{border-color:var(--good)}
+.detail-top{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.detail-top figure{margin:0}
+.detail-top img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:3px solid var(--bad)}
+.detail-top figure.c img{border-color:var(--good)}
+.detail-top figcaption{font-family:var(--pix);font-size:13px;text-align:center;margin-top:6px;color:var(--muted)}
+.meta{color:var(--muted);font-size:14px}
+table.stats{width:100%;border-collapse:collapse;font-size:14px}
+table.stats td,table.stats th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+table.stats th{color:var(--muted);font-weight:700}
+.sbar{display:flex;align-items:center;gap:6px}
+.sbar i{display:block;height:8px;border-radius:4px}
+.sbar.e i{background:var(--bad)}.sbar.a i{background:var(--good)}
+.sbar span{font-size:12px;width:22px}
+.small{font-size:13px;color:var(--muted)}
+@media (max-width:620px){
+  .b-top{grid-template-columns:1fr}
+  .b-card img{aspect-ratio:4/3;max-height:30vh}
+  .b-info{padding:10px 12px}
+  .b-info hr{margin:10px 0 6px}
+  .msg{font-size:16px}
+  .actions button{font-size:15px;padding:12px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="hud">
+    <div class="brand">BESTIARIO URBANO</div>
+    <div class="team" id="team"></div>
+    <div class="hud-btns">
+      <button class="btn" id="btnDex">📖 Bestiario</button>
+      <button class="btn" id="btnMusic" aria-label="Silenciar música">🔊</button>
+      <button class="btn" id="btnMap" aria-label="Ver mapa completo">🗺️ Mapa</button>
+      <button class="btn" id="btnHelp" aria-label="Ayuda">❓</button>
+    </div>
+  </header>
+  <div class="stage">
+    <canvas id="map" width="768" height="448"></canvas>
+    <div id="dlg" class="dlg" hidden><span class="who" id="dlgWho"></span><div id="dlgText"></div><span class="next">▶</span></div>
+  </div>
+  <div class="credit">Mapa ilustrado: Sr. Nadie Me Busca</div>
+</div>
+
+<div id="cover" role="button" tabindex="0" aria-label="Portada: haz clic para comenzar">
+  <img class="cover-bg" src="img/portada.webp" alt="">
+  <img class="cover-img" src="img/portada.webp" alt="Bestiario Urbano · Bogotá Arcade: ¡Protege la ciudad, forma tu equipo!">
+  <div class="cover-prompt" id="coverPrompt">▶ HAZ CLIC PARA COMENZAR</div>
+</div>
+
+<div id="title" class="screen" hidden>
+  <div class="title-card">
+    <h1>BESTIARIO<br>URBANO</h1>
+    <div class="sub">BOGOTÁ · CALMA, NO DERROTES</div>
+    <div class="title-strip" id="strip"></div>
+    <p>Seis animales de la ciudad están enojados, y casi siempre la causa es humana. Recorre el parque, los tejados, la plaza, el barrio, las basuras y el páramo. Usa la acción de manejo correcta para calmarlos y sumarlos a tu equipo.</p>
+    <div class="title-btns">
+      <button class="btn primary" id="btnPlay">▶ Jugar</button>
+      <button class="btn" id="btnNew" hidden>Nueva partida</button>    </div>
+  </div>
+</div>
+
+<div id="battle" class="screen battle" hidden>
+  <div class="b-wrap">
+    <div class="b-top">
+      <div class="b-card" id="bCard"><img id="bImg" alt=""><span class="tag" id="bTag">ENOJADO</span></div>
+      <div class="b-info">
+        <div class="b-name"><span id="bName"></span></div>
+        <div class="b-sci" id="bSci"></div>
+        <div class="bar-label"><span>ENOJO</span><span id="bEnN"></span></div>
+        <div class="bar enojo"><i id="bEnojo"></i></div>
+        <div class="steps" id="bSteps"></div>
+        <div class="chips" id="bChips"></div>
+        <hr>
+        <div class="p-head"><img id="pFace" src="img/jugador/e_normal.png" alt="Tu personaje"><div class="b-name small">TÚ · GUARDIÁN URBANO</div></div>
+        <div class="bar-label"><span>PACIENCIA</span><span id="bPacN"></span></div>
+        <div class="bar pac"><i id="bPac"></i></div>
+        <div class="chips" id="pChips"></div>
+      </div>
+    </div>
+    <div class="msg" id="bMsg"></div>
+    <div class="actions" id="bActions">
+      <button data-a="items">🎒 Mochila</button>
+      <button data-a="look">🔍 Observar</button>
+      <button data-a="allies">🤝 Aliados</button>
+      <button data-a="run">🏃 Retirarse</button>
+    </div>
+    <div class="submenu" id="bSub" hidden></div>
+  </div>
+</div>
+
+<div id="modal" class="screen" hidden><div class="modal-card" id="modalCard"></div></div>
+
+<script>
+/* Música chiptune de 16 bits generada en vivo con Web Audio (sin archivos de audio).
+   Dos temas: "mapa" (alegre, Do mayor) y "batalla" (enérgico, La menor).
+   Uso: Music.play("mapa" | "batalla"), Music.toggle(), Music.muted */
+(() => {
+  "use strict";
+  const VOLUMEN = 0.07;                       // volumen general bajo
+  const KEY = "bestiario-urbano-musica-silencio";
+
+  // ---------- Partituras ----------
+  // Melodía en corcheas: cada ficha = 1/8 de compás. "-" prolonga la nota anterior, "." es silencio.
+  const ACORDES = {
+    C:["C","E","G"], Am:["A","C","E"], F:["F","A","C"], G:["G","B","D"], Em:["E","G","B"], E:["E","G#","B"],
+    D:["D","F#","A"], Dm:["D","F","A"], Bb:["A#","D","F"]
+  };
+  const TEMAS = {
+    portada: {                                 // himno arcade de la portada (Sol mayor)
+      bpm: 132, onda: "p25", arpegio: "rapido",
+      acordes: ["G","D","Em","C","G","D","C","D"],
+      melodia: [
+        "G4 . B4 D5 G5 - D5 B4",  "A4 - D5 - F#5 - E5 D5", "E5 . G5 . B5 - A5 G5", "E5 - D5 C5 E5 - . .",
+        "D5 . G5 . B5 - A5 G5",   "F#5 . A5 . D6 - C6 A5", "G5 - E5 - C5 E5 G5 C6", "B5 - A5 - F#5 - . ."
+      ],
+      bajo: "marcha", bateria: "marcha"
+    },
+    aliado: {                                  // fanfarria cálida cuando un animal se vuelve aliado (Fa mayor)
+      bpm: 100, onda: "p50", arpegio: "lento",
+      acordes: ["F","C","Dm","Bb","F","C","Bb","C"],
+      melodia: [
+        "C5 F5 A5 C6 - - A5 .",   "G5 - E5 - C5 - . .",    "D5 F5 A5 - G5 F5 E5 D5", "F5 - D5 - A#4 - . .",
+        "A5 . A5 . A5 G5 F5 .",   "G5 . G5 . G5 F5 E5 .",  "F5 - D5 - A#5 - A5 G5",  "A5 - G5 - E5 - C5 ."
+      ],
+      bajo: "suave", bateria: "suave"
+    },
+    mapa: {
+      bpm: 112,
+      acordes: ["C","Am","F","G","C","Em","F","G", "C","Am","F","G","F","G","C","C"],
+      melodia: [
+        "E5 . G5 . A5 G5 E5 .",  "C5 . E5 . D5 C5 A4 .",  "F4 A4 C5 . D5 C5 A4 .", "G4 . B4 . D5 - - .",
+        "E5 . G5 . C6 B5 A5 G5", "E5 . G5 . B5 A5 G5 E5", "F5 E5 D5 C5 A4 C5 F5 .", "G5 - D5 - B4 - . .",
+        "C5 E5 G5 E5 C6 - G5 .", "A4 C5 E5 C5 A5 - E5 .", "F5 - E5 F5 A5 - F5 .",   "D5 - G5 - B5 - . .",
+        "A5 G5 F5 E5 D5 C5 A4 .", "B4 C5 D5 E5 F5 E5 D5 .", "E5 - D5 - C5 - - -",    ". . . . . . . ."
+      ],
+      bajo: "suave",      // patrón del bajo
+      bateria: "suave"
+    },
+    batalla: {
+      bpm: 144,
+      acordes: ["Am","Am","F","G","Am","Am","F","E"],
+      melodia: [
+        "A4 . C5 . E5 . D5 C5", "B4 . C5 D5 E5 - . .",  "F5 . E5 . D5 . C5 A4", "B4 . D5 . G5 - . .",
+        "A5 . G5 . E5 . C5 D5", "E5 - D5 C5 A4 - . .",  "F5 . A5 . G5 F5 E5 D5", "E5 - G#5 - B5 - . ."
+      ],
+      bajo: "galope",
+      bateria: "fuerte"
+    }
+  };
+
+  // ---------- Motor ----------
+  let ctx = null, master = null, ondas = {}, ruido = null;
+  let tema = null, paso = 0, tSig = 0, reloj = null, muted = false;
+  try { muted = localStorage.getItem(KEY) === "1"; } catch (e) {}
+
+  const SEMI = {C:0,"C#":1,D:2,"D#":3,E:4,F:5,"F#":6,G:7,"G#":8,A:9,"A#":10,B:11};
+  const hz = n => { const m = /^([A-G]#?)(\d)$/.exec(n); const midi = 12 * (+m[2] + 1) + SEMI[m[1]]; return 440 * Math.pow(2, (midi - 69) / 12); };
+
+  function ondaPulso(duty) {                  // onda cuadrada de consola (12,5 %, 25 %, 50 %)
+    const n = 64, re = new Float32Array(n), im = new Float32Array(n);
+    for (let k = 1; k < n; k++) re[k] = (2 / (k * Math.PI)) * Math.sin(k * Math.PI * duty);
+    return ctx.createPeriodicWave(re, im);
+  }
+  function iniciar() {
+    if (ctx) return true;
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+    ctx = new AC();
+    master = ctx.createGain(); master.gain.value = muted ? 0 : VOLUMEN;
+    const filtro = ctx.createBiquadFilter(); filtro.type = "lowpass"; filtro.frequency.value = 7000;  // suaviza los agudos
+    master.connect(filtro); filtro.connect(ctx.destination);
+    ondas = { p12: ondaPulso(0.125), p25: ondaPulso(0.25), p50: ondaPulso(0.5) };
+    ruido = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+    const d = ruido.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) ctx.suspend(); else ctx.resume().then(() => { tSig = ctx.currentTime + 0.05; });
+    });
+    return true;
+  }
+
+  function nota(onda, f, t, dur, vol, vibrato) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    if (onda === "tri") o.type = "triangle"; else o.setPeriodicWave(ondas[onda]);
+    o.frequency.setValueAtTime(f, t);
+    if (vibrato && dur > 0.3) {               // leve vibrato en notas largas
+      const lfo = ctx.createOscillator(), lg = ctx.createGain();
+      lfo.frequency.value = 5.5; lg.gain.value = f * 0.006;
+      lfo.connect(lg); lg.connect(o.frequency); lfo.start(t + 0.15); lfo.stop(t + dur);
+    }
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.006);
+    g.gain.setTargetAtTime(vol * 0.65, t + 0.02, 0.06);
+    g.gain.setValueAtTime(vol * 0.65, Math.max(t + 0.03, t + dur - 0.03));
+    g.gain.linearRampToValueAtTime(0, t + dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
+  }
+  function tambor(tipo, t, fuerza = 1) {
+    if (tipo === "bombo") {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
+      g.gain.setValueAtTime(0.9 * fuerza, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.18); return;
+    }
+    const s = ctx.createBufferSource(), hp = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = ruido; hp.type = "highpass";
+    const caja = tipo === "caja";
+    hp.frequency.value = caja ? 1800 : 7500;
+    const dur = caja ? 0.13 : 0.035, vol = (caja ? 0.32 : 0.11) * fuerza;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    s.connect(hp); hp.connect(g); g.connect(master); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.01);
+  }
+
+  // Convierte la partitura en eventos por semicorchea (16 pasos por compás)
+  function preparar(def) {
+    const pasos = def.acordes.length * 16, mel = new Array(pasos).fill(null);
+    def.melodia.forEach((linea, c) => {
+      const fichas = linea.trim().split(/\s+/);
+      fichas.forEach((tk, i) => {
+        if (tk === "-" || tk === ".") return;
+        let largo = 1; while (fichas[i + largo] === "-") largo++;
+        mel[c * 16 + i * 2] = { f: hz(tk), d: largo * 2 };
+      });
+    });
+    return { ...def, pasos, mel };
+  }
+  const LISTOS = {}; for (const k in TEMAS) LISTOS[k] = preparar(TEMAS[k]);
+
+  function tocarPaso(T, p, t) {
+    const sc = 60 / T.bpm / 4;                 // duración de una semicorchea
+    const compas = Math.floor(p / 16), s = p % 16;
+    const acorde = ACORDES[T.acordes[compas]];
+    const raiz = acorde[0];
+    // melodía (pulso 25 % o 50 %)
+    const m = T.mel[p]; if (m) nota(T.onda || "p25", m.f, t, m.d * sc * 0.95, T.onda === "p50" ? 0.26 : 0.33, true);
+    // arpegio de acompañamiento (pulso 12,5 %, muy suave)
+    const lento = (T.arpegio || (T.bajo === "suave" ? "lento" : "rapido")) === "lento";
+    if (lento ? s % 2 === 0 : true) nota("p12", hz(acorde[(s >> (lento ? 1 : 0)) % 3] + "4"), t, sc * 0.8, lento ? 0.07 : 0.05);
+    // bajo (triángulo)
+    if (T.bajo === "suave") {
+      if (s === 0 || s === 6) nota("tri", hz(raiz + "2"), t, sc * 3, 0.42);
+      if (s === 8) nota("tri", hz(acorde[2] + "2"), t, sc * 3, 0.38);
+      if (s === 12) nota("tri", hz(raiz + "3"), t, sc * 3, 0.36);
+    } else if (T.bajo === "marcha") {          // octavas saltarinas en corcheas
+      if (s % 2 === 0) nota("tri", hz(raiz + (s % 4 === 0 ? "2" : "3")), t, sc * 1.6, 0.44);
+      if (s === 14) nota("tri", hz(acorde[2] + "2"), t, sc * 1.6, 0.4);
+    } else if (s % 2 === 0) {
+      nota("tri", hz(raiz + (s % 4 === 0 ? "2" : "3")), t, sc * 1.8, 0.45);
+    }
+    // batería
+    if (T.bateria === "suave") {
+      if (s === 0 || s === 10) tambor("bombo", t, 0.6);
+      if (s === 8) tambor("caja", t, 0.6);
+      if (s % 4 === 2) tambor("plato", t, 0.8);
+    } else if (T.bateria === "marcha") {
+      if (s === 0 || s === 8 || s === 10) tambor("bombo", t, 0.75);
+      if (s === 4 || s === 12) tambor("caja", t, 0.8);
+      if (s % 2 === 0) tambor("plato", t, 0.85);
+    } else {
+      if (s % 8 === 0 || s === 11) tambor("bombo", t, 0.8);
+      if (s % 8 === 4) tambor("caja", t, 0.9);
+      if (s % 2 === 0) tambor("plato", t, 1);
+    }
+  }
+  function programar() {
+    if (!tema) return;
+    const T = LISTOS[tema], sc = 60 / T.bpm / 4;
+    while (tSig < ctx.currentTime + 0.15) {
+      tocarPaso(T, paso, tSig);
+      tSig += sc; paso = (paso + 1) % T.pasos;
+    }
+  }
+
+  // El navegador puede bloquear el sonido hasta el primer gesto: cualquier clic, toque o tecla lo desbloquea.
+  const desbloquear = () => { if (ctx && ctx.state === "suspended" && !document.hidden) return ctx.resume(); return Promise.resolve(); };
+  ["pointerdown", "keydown", "touchend"].forEach(ev => document.addEventListener(ev, desbloquear, true));
+
+  window.Music = {
+    get muted() { return muted; },
+    get tema() { return tema; },
+    get disponible() { return !!(window.AudioContext || window.webkitAudioContext); },
+    get sonando() { return !!ctx && ctx.state === "running"; },
+    desbloquear,
+    play(nombre) {                            // si aún no hubo gesto, queda lista y suena al primer clic
+      if (!iniciar()) return;
+      if (ctx.state === "suspended" && !document.hidden) ctx.resume();
+      if (tema === nombre) return;
+      tema = nombre; paso = 0; tSig = ctx.currentTime + 0.08;
+      if (!reloj) reloj = setInterval(programar, 30);
+    },
+    toggle() {
+      muted = !muted;
+      try { localStorage.setItem(KEY, muted ? "1" : "0"); } catch (e) {}
+      if (ctx) master.gain.setTargetAtTime(muted ? 0 : VOLUMEN, ctx.currentTime, 0.05);
+      return muted;
+    }
+  };
+})();
+</script>
+<script>
+(() => {
+"use strict";
+const TS = 24, COLS = 55, ROWS = 32;
+const ORDER = ["copeton","gato","paloma","perro","rata","oso"];
+const img = (id, s) => `img/${id}_${s}.jpg`;
+const face = (id, s) => `img/${id}_${s}_cara.jpg`;
+
+/* ---------- Ítems de manejo ---------- */
+const ITEMS = {
+  kit:{n:"Kit de rescate SDA",i:"📦",e:"Secretaría de Ambiente",d:"Caja ventilada + línea 123 para aves caídas o heridas."},
+  cerca:{n:"Cerca viva nativa",i:"🌿",e:"Secretaría de Ambiente",d:"Plantas nativas que dan refugio y comida a las aves."},
+  vacuna:{n:"Vacuna antirrábica",i:"💉",e:"Secretaría de Salud",d:"Previene la rabia en perros y gatos. Es preventiva y anual."},
+  esterilizacion:{n:"Esterilización (CES)",i:"🏥",e:"IDPYBA",d:"Captura, esteriliza y suelta. Controla la reproducción."},
+  microchip:{n:"Microchip",i:"🔖",e:"IDPYBA",d:"Identifica al animal adoptado."},
+  collar:{n:"Collar con cascabel",i:"🔔",e:"Tenencia responsable",d:"Avisa a las aves que el gato se acerca."},
+  desparasitante:{n:"Desparasitante",i:"💊",e:"IDPYBA",d:"Elimina parásitos y mejora la condición corporal."},
+  cartel:{n:"Cartel «No alimente a las palomas»",i:"🪧",e:"Pedagogía ciudadana",d:"Explica por qué el maíz las enferma."},
+  anticonceptivo:{n:"Anticonceptivo para aves",i:"🥚",e:"Distrito",d:"Control reproductivo sin matar."},
+  bolsa:{n:"Bolsa cerrada + horario",i:"🛍️",e:"UAESP",d:"Basura en bolsa cerrada y en el horario de recolección."},
+  desratizacion:{n:"Desratización",i:"🧪",e:"Subred de Salud",d:"Control de roedores."},
+  guantes:{n:"Guantes y botas",i:"🧤",e:"Secretaría de Salud",d:"Te protegen de la leptospirosis."},
+  camara:{n:"Cámara trampa",i:"📷",e:"CAR · Parques Nacionales",d:"Observar sin molestar."},
+  acuerdo:{n:"Acuerdo de reconversión",i:"🤝",e:"CAR · Gobernación · JAC",d:"Acuerdo con campesinos sobre el ganado."},
+  maiz:{n:"Maíz o pan",i:"🌽",e:"—",d:"Lo que mucha gente les da de comer."},
+  red:{n:"Red para perseguir",i:"🥅",e:"—",d:"Atraparlo a la fuerza."},
+  piedras:{n:"Gritar o tirar piedras",i:"🪨",e:"—",d:"Espantarlo."},
+  escopeta:{n:"Escopeta o cebo",i:"⚠️",e:"—",d:"Cazar o envenenar."}
+};
+
+/* ---------- Bestiario (datos del documento del docente) ---------- */
+const ANIMALS = {
+  copeton:{
+    name:"Copetón", sci:"Zonotrichia capensis", lvl:10, sex:"♂", tipo:"Silvestre · Ave nativa", kind:"libre",
+    zone:"Parque", pos:[4,3], rol:"Explorador y ciencia ciudadana",
+    intro:"¡Un <b>Copetón</b> enojado bloquea el sendero del parque!",
+    why:"Es el ave insignia de Bogotá, pero el conteo navideño de aves muestra que va en descenso: expansión urbana, cambio climático y el chamón, que pone sus huevos en el nido del copetón para que él críe pollos ajenos. Además, perros y gatos lo atacan.",
+    hint:"Parece caído del nido y deshidratado. Primero hay que rescatarlo; después, devolverle un hábitat.",
+    dato:"Mide 13–15 cm y pesa 20–25 g. Sigue siendo de las aves más abundantes en los bosques urbanos.",
+    steps:[["kit"],["cerca"]],
+    stepText:{
+      kit:"Lo pones en una caja ventilada y llamas a la línea 123. La Secretaría de Ambiente rehabilita aves caídas del nido, deshidratadas o atacadas por mascotas.",
+      cerca:"Siembras una cerca viva nativa: refugio, insectos y semillas. El copetón vuelve a cantar tranquilo."
+    },
+    attacks:[
+      {n:"Canto de alarma",dmg:5,t:"Su canto agudo te desconcentra."},
+      {n:"Picoteo territorial",dmg:8,t:"¡Pica rápido y primero!"}
+    ],
+    wrong:{maiz:{t:"¡Le diste maíz o pan! No es su dieta y atrae palomas que le quitan espacio. Se enoja más."}},
+    union:"Vuelve a su cerca viva como <b>aliado libre</b>: la fauna silvestre no es mascota. Su <b>Primer canto</b> te dará ventaja en los encuentros.",
+    allyMoves:["Conteo navideño: revela especies ocultas (ciencia ciudadana).","Patrulla de insectos: limpia plagas del jardín.","Primer canto: el equipo actúa primero."],
+    stats:{ps:[30,50],atk:[25,15],def:[20,20],spa:[90,85],spd:[50,70],vel:[90,85]},
+    src:"Alcaldía de Bogotá, El Tiempo",
+    quiz:{q:"Encuentras un copetón caído del nido. ¿Qué haces?",o:["Le doy pan o maíz para que coma","Lo pongo en una caja ventilada y llamo a la línea 123","Me lo llevo a casa como mascota"],a:1,
+      x:"La Secretaría de Ambiente rescata y rehabilita aves. El pan y el maíz no son su dieta, y la fauna silvestre no se tiene como mascota."}
+  },
+  gato:{
+    name:"Gata atigrada", sci:"Felis catus", lvl:15, sex:"♀", tipo:"Doméstico · Felino de colonia", kind:"equipo",
+    zone:"Tejados", pos:[12,2], rol:"Cazadora ágil y control de plagas",
+    intro:"¡Una <b>Gata atigrada</b> enojada bufa desde el tejado!",
+    why:"Vive en una colonia sin cuidador, sin vacunas y reproduciéndose sin control, en tejados, construcciones abandonadas y cementerios. Desconfía de la jaula.",
+    hint:"Sin vacuna ni control reproductivo, la colonia sigue creciendo. Paso a paso: primero prevenir, luego controlar la reproducción.",
+    dato:"Es el animal más esterilizado de la ciudad: 9.011 gatos en el primer semestre de 2025, frente a 4.726 perros. Su lado oscuro: los gatos con acceso a la calle matan de 3 a 12 millones de aves al año en Colombia.",
+    steps:[["vacuna"],["esterilizacion"]],
+    stepText:{
+      vacuna:"Vacuna antirrábica aplicada. Entre enero y agosto de 2025 se vacunaron 213.194 gatos en Bogotá. (En la vida real la vacuna previene: se pone cada año).",
+      esterilizacion:"Esterilización CES: captura, esteriliza y suelta. La colonia deja de crecer.",
+      collar:"Le pones un collar con cascabel: el copetón la escucha llegar. ¡Equilibrio en el equipo!"
+    },
+    attacks:[
+      {n:"Rabia",dmg:6,t:"Te araña con furia.",status:"mordida"},
+      {n:"Emboscada en el tejado",dmg:11,t:"¡Salta desde arriba sin aviso!"}
+    ],
+    wrong:{red:{t:"La persigues con una red: huye, desconfía más de la jaula y se enoja.",rage:2}},
+    union:"Se une a tu <b>equipo</b>: vacunada, esterilizada y con una colonia cuidada. Su enfoque cambia de la rabia al <b>control de plagas</b>.",
+    allyMoves:["Control de plagas: súper efectivo contra la rata.","Ronroneo: te devuelve paciencia.","Colonia cuidada: un cuidador comunitario bloquea un ataque."],
+    stats:{ps:[35,70],atk:[55,45],def:[40,40],spa:[60,70],spd:[55,60],vel:[95,90]},
+    src:"IDPYBA, Secretaría de Salud, El Desconcierto",
+    quiz:{q:"¿Qué significa CES en el manejo de gatos de colonia?",o:["Captura, Esterilización y Suelta","Cuidado En Semana","Control de Especies Silvestres"],a:0,
+      x:"El equipo CES del IDPYBA captura a los gatos ferales, los esteriliza y los devuelve a su colonia. Así la colonia deja de crecer."}
+  },
+  paloma:{
+    name:"Paloma de plaza", sci:"Columba livia", lvl:10, sex:"♂", tipo:"Introducida · Ave urbana", kind:"equipo",
+    zone:"Plaza de Bolívar", pos:[14,9], rol:"Mensajera y exploradora aérea",
+    intro:"¡Una <b>Paloma de plaza</b> enojada se adelanta a la bandada!",
+    why:"La sobreoferta de maíz creó una sobrepoblación. Los veterinarios encontraron palomas con bajo peso y mal plumaje en la Plaza de Bolívar: mucha comida mala = muchas palomas, pero enfermas.",
+    hint:"Se ve flaca y con el plumaje maltratado. Primero, su salud; luego, que la gente deje de darle maíz; por último, que la bandada no vuelva a crecer.",
+    dato:"Con la prohibición de vender maíz (2018), la atención veterinaria y el control reproductivo, la Plaza de Bolívar pasó de unas 2.300 palomas a entre 400 y 500 en 2026. ¡Sin matarlas!",
+    steps:[["desparasitante"],["cartel"],["anticonceptivo"]],
+    stepText:{
+      desparasitante:"Desparasitada: su plumaje y su peso empiezan a mejorar.",
+      cartel:"Pones el cartel «No alimente a las palomas». La gente entiende que el maíz las enferma.",
+      anticonceptivo:"Anticonceptivo para aves: la bandada no vuelve a crecer. Así se calmó la plaza sin matar a ninguna."
+    },
+    attacks:[
+      {n:"Lluvia de guano",dmg:7,t:"Te ensucia a ti y al escenario."},
+      {n:"Arrullo insistente",dmg:3,t:"Su arrullo no te deja pensar.",skip:true},
+      {n:"Bandada de maíz",dmg:11,t:"¡Llegan más palomas atraídas por el maíz!",cond:B=>B.maiz}
+    ],
+    wrong:{maiz:{t:"Le das maíz: recupera un poquito de energía… ¡pero llegan más palomas y la bandada se duplica!",flag:"maiz"}},
+    union:"Se une a tu <b>equipo</b>. Ahora es mensajera: siempre encuentra la ruta para volver a casa.",
+    allyMoves:["Paloma mensajera: entrega un ítem a un aliado lejano.","Vuelo de reconocimiento: muestra la ruta más corta.","Censo de plaza: cuenta animales y avisa si hay sobrepoblación."],
+    stats:{ps:[20,60],atk:[20,20],def:[30,35],spa:[70,80],spd:[55,85],vel:[70,75]},
+    src:"Alcaldía de Bogotá (2018–2026)",
+    quiz:{q:"¿Cómo bajó la población de palomas de la Plaza de Bolívar de 2.300 a unas 400–500?",o:["Eliminándolas","Prohibiendo vender maíz, con atención veterinaria y control reproductivo","Trayendo halcones a la plaza"],a:1,
+      x:"Se logró sin matarlas: menos maíz, palomas más sanas y control reproductivo. Es el mejor ejemplo de «calmar en lugar de derrotar»."}
+  },
+  perro:{
+    name:"Perro criollo", sci:"Canis familiaris", lvl:10, sex:"♂", tipo:"Doméstico · Canino de cuadra", kind:"equipo",
+    zone:"Barrio", pos:[3,14], rol:"Rastreador y rescatista",
+    intro:"¡Un <b>Perro criollo</b> enojado te ladra en la esquina!",
+    why:"Lo abandonaron. El IDPYBA estima unos 66.000 perros deambulantes en Bogotá, sobre todo en Ciudad Bolívar, Usme, Bosa, Kennedy, San Cristóbal y Suba. Algunos forman manadas en los humedales y cazan fauna silvestre.",
+    hint:"Nadie lo ha vacunado. Para tener un hogar de verdad necesita tres pasos: prevenir la rabia, controlar su reproducción e identificarlo.",
+    dato:"Entre enero y agosto de 2024 la Subred Sur Occidente reportó 1.188 ataques de perros, 379 de ellos graves.",
+    steps:[["vacuna"],["esterilizacion"],["microchip"]],
+    stepText:{
+      vacuna:"Vacunado: entre enero y agosto de 2025 se vacunaron 241.384 perros en Bogotá. (La vacuna es preventiva y anual).",
+      esterilizacion:"Esterilizado: menos camadas en la calle, menos perros abandonados.",
+      microchip:"Microchip puesto: si se pierde, lo encuentran. Así entrega el IDPYBA a los perros adoptados."
+    },
+    attacks:[
+      {n:"Mordisco",dmg:10,t:"¡Te muerde la manga!",status:"mordida"},
+      {n:"Ladrido de rabia",dmg:6,t:"Te ladra sin parar."},
+      {n:"Manada feral",dmg:8,t:"Aparecen dos perros más: su próximo ataque pega más fuerte.",rageUp:true}
+    ],
+    wrong:{piedras:{t:"¡Le gritas y le tiras piedras! Ahora desconfía más de las personas: su ataque sube mucho.",rage:2}},
+    union:"Se une a tu <b>equipo</b>: vacunado, esterilizado y con microchip. ¡El vecino más buena pata!",
+    allyMoves:["Rastreo: encuentra animales perdidos e ítems ocultos.","Vecino buena pata: la cuadra devuelve paciencia al equipo.","Perro de rescate: localiza personas atrapadas tras un sismo."],
+    stats:{ps:[35,75],atk:[65,55],def:[55,60],spa:[50,80],spd:[60,75],vel:[70,70]},
+    src:"IDPYBA, Secretaría de Salud, El Espectador, El Tiempo",
+    quiz:{q:"¿Cuántos perros deambulantes estima el IDPYBA que hay en Bogotá?",o:["Unos 6.600","Unos 66.000","Unos 660.000"],a:1,
+      x:"Unos 66.000, con mayor densidad en seis localidades. Vacunar, esterilizar y adoptar con microchip reduce el abandono."}
+  },
+  rata:{
+    name:"Rata de alcantarilla", sci:"Rattus norvegicus", lvl:10, sex:"♂", tipo:"Introducida · Roedor plaga", kind:"informante",
+    zone:"Puente y basuras", pos:[16,14], rol:"Bioindicador: avisa dónde falla el manejo de basuras",
+    intro:"¡Una <b>Rata de alcantarilla</b> sale de entre la basura!",
+    why:"En realidad no está enojada: está bien alimentada por la basura mal dispuesta. Se controla porque transmite leptospirosis a animales y personas. En 2026 se identificaron 135 puntos críticos en 10 localidades.",
+    hint:"Mientras haya basura, volverán más ratas. Protégete de la leptospirosis y quita primero lo que la atrae.",
+    dato:"En 2023 las Subredes controlaron más de 2.975.441 m² de espacio público. En el Parque Nacional (sept. 2024) se retiraron cerca de 681 roedores con una inversión de más de 403 millones de pesos.",
+    steps:[["bolsa"],["desratizacion"]],
+    stepText:{
+      bolsa:"Bolsas cerradas y sacadas en el horario de recolección: la rata se queda sin comida.",
+      desratizacion:"La Subred hace la desratización. Ahora sí funciona, porque ya no hay basura."
+    },
+    attacks:[
+      {n:"Leptospira",dmg:4,t:"Te salpica agua contaminada.",status:"lepto"},
+      {n:"Mordida acorralada",dmg:7,t:"Muerde porque se siente acorralada."},
+      {n:"Plaga",dmg:6,t:"¡Sale otra rata de la basura!",cond:B=>!B.bolsa}
+    ],
+    wrong:{
+      vacuna:{t:"Sin efecto: no hay vacuna para controlar ratas.",rage:0},
+      esterilizacion:{t:"No es la medida: lo que la atrae es la basura.",rage:0}
+    },
+    union:"La rata no es mascota: se vuelve tu <b>informante</b>. Te avisa dónde falla el manejo de basuras.",
+    allyMoves:["Mapa de basuras: marca puntos críticos de arrojo.","Alerta sanitaria: avisa antes de entrar a zonas con leptospirosis.","Atajo de alcantarilla: atraviesa zonas bloqueadas por escombros."],
+    stats:{ps:[20,45],atk:[40,30],def:[35,35],spa:[35,40],spd:[85,90],vel:[80,75]},
+    src:"Secretaría de Salud, Alcaldía de Bogotá, Semana",
+    quiz:{q:"¿Qué hay que hacer ANTES de la desratización para que funcione?",o:["Vacunar a las ratas","Cerrar las bolsas y respetar el horario de recolección","Darles comida lejos de las casas"],a:1,
+      x:"Si la basura sigue ahí, llegan más ratas y la desratización dura muy poco. Primero se quita lo que las atrae."}
+  },
+  oso:{
+    name:"Oso andino", sci:"Tremarctos ornatus", lvl:10, sex:"♂", tipo:"Silvestre · Mamífero de páramo", kind:"libre",
+    zone:"Páramo", pos:[21,2], rol:"Tanque y guardián del agua",
+    intro:"¡Un <b>Oso andino</b> aparece entre los frailejones! Es un encuentro raro.",
+    why:"La ganadería sin control ocupa su hábitat y lo enfrenta con los campesinos. Por eso lo cazan, aunque la culpa no es del oso sino de la ocupación del páramo. Cerca de Chingaza, la necropsia de un oso cazado no encontró carne fresca: no estaba atacando ganado.",
+    hint:"Es tímido. Primero hay que observarlo sin molestarlo; después, resolver el problema del ganado con la comunidad.",
+    dato:"Cerca del 90 % de su dieta es vegetal. En agosto de 2026 la CAR grabó una osa con su cría en La Calera, a unos 3.200 m.",
+    steps:[["camara"],["acuerdo"]],
+    stepText:{
+      camara:"Instalas una cámara trampa: lo observas sin molestarlo y confirmas que come sobre todo plantas, no vacas.",
+      acuerdo:"Acuerdo de reconversión productiva con las Juntas de Acción Comunal: el ganado sale del páramo y el oso recupera su hogar."
+    },
+    attacks:[
+      {n:"Zarpazo al ganado",dmg:16,acc:.5,t:"Un golpe fuerte, pero torpe."},
+      {n:"Rugido de páramo",dmg:9,t:"Retumba entre los frailejones."},
+      {n:"Retirada al bosque",flee:true}
+    ],
+    wrong:{maiz:{t:"La comida humana lo acostumbra a acercarse a las fincas: más conflicto con los campesinos."}},
+    union:"Regresa al bosque como <b>aliado libre</b>. Guardián del agua: los páramos abastecen de agua a Bogotá.",
+    allyMoves:["Guardián del agua: restaura la paciencia de todo el equipo.","Siembra de bosque: dispersa semillas y abre caminos.","Especie sombrilla: al protegerlo, se protege todo el ecosistema."],
+    stats:{ps:[60,85],atk:[85,60],def:[90,90],spa:[25,40],spd:[60,80],vel:[40,35]},
+    src:"CAR, El Espectador, La FM, Alcaldía de Bogotá",
+    quiz:{q:"¿Qué parte de la dieta del oso andino es vegetal?",o:["Cerca del 10 %","Cerca del 50 %","Cerca del 90 %"],a:2,
+      x:"Cerca del 90 %. Cuando ataca ganado lo hace de forma torpe; el conflicto se resuelve sacando el ganado del páramo, no cazando al oso."}
+  }
+};
+
+const SKILLS = {
+  copeton:{n:()=>"Primer canto", d:"Actúas dos veces seguidas", free:true,
+    run:async()=>{ B.skipAnimal=true; await say("🐦 El copetón entona el <b>Primer canto</b>: actuarás antes de que el animal reaccione."); }},
+  gato:{n:()=>B.id==="rata"?"Control de plagas":"Ronroneo", d:()=>B.id==="rata"?"¡Súper efectivo contra la rata!":"+30 paciencia",
+    run:async()=>{ if(B.id==="rata"){ B.rage=0; B.stun=true; renderBattle(); await say("🐈 <b>Control de plagas</b>: ¡súper efectivo! La rata se esconde y no ataca este turno."); }
+      else { heal(30); await say("🐈 <b>Ronroneo</b>: te tranquilizas (+30 paciencia)."); } }},
+  paloma:{n:()=>"Censo de plaza", d:"Pista del siguiente paso", free:true,
+    run:async()=>{ const need=B.steps[B.step]; await say(`🕊️ <b>Censo de plaza</b>: la paloma revisó la zona. Lo que más se necesita ahora: <b>${need.map(i=>ITEMS[i].i+" "+ITEMS[i].n).join(" o ")}</b>.`); }},
+  perro:{n:()=>"Vecino buena pata", d:"+35 paciencia",
+    run:async()=>{ heal(35); await say("🐕 <b>Vecino buena pata</b>: la cuadra te apoya (+35 paciencia)."); }},
+  rata:{n:()=>"Alerta sanitaria", d:"Quita estados y protege",
+    run:async()=>{ B.pst={}; B.prot=true; renderBattle(); await say("🐀 <b>Alerta sanitaria</b>: la rata te avisó a tiempo. Sin estados y protegido de la leptospirosis."); }},
+  oso:{n:()=>"Guardián del agua", d:"Paciencia al máximo",
+    run:async()=>{ B.pac=100; renderBattle(); await say("🐻 <b>Guardián del agua</b>: el páramo te renueva. Paciencia al máximo."); }}
+};
+
+/* ---------- Mapa ---------- */
+/* Mapa ilustrado de Bogotá (img/mapa.jpg, 1320×768 px). Cada carácter es una casilla de 24 px:
+   "#" = tierra caminable, "." = cielo o agua alrededor del mapa. */
+const MAP = [
+  "........##.............................................",
+  "........#######........................................",
+  "......#############....................................",
+  "......###############..................................",
+  "......################..##.............................",
+  ".......################.##.............................",
+  ".......####################............................",
+  ".......####################.....###....................",
+  ".......#####################..#.###....................",
+  "...........####################.###....................",
+  ".......############################....................",
+  "......##############################.###........###....",
+  ".......#################################........####...",
+  ".........#################################......###....",
+  "..........##################################..#####....",
+  "..........#########################################....",
+  "..........########################################.....",
+  "............######################################.....",
+  ".............#####################################.....",
+  "............#####################################......",
+  ".............#########.########################........",
+  ".............#########...################..............",
+  "...............#######....################.............",
+  "................######...#################.............",
+  ".................####....#################.............",
+  "........................############..##...............",
+  "..........................##########...................",
+  "..........................#######......................",
+  ".........................######........................",
+  "..........................#####........................",
+  "...........................####........................",
+  "......................................................."
+];
+const START = {x:28,y:20};
+const GUIDE = {x:30,y:20};
+const POS = {rata:[13,10], copeton:[17,15], paloma:[24,9], perro:[28,17], gato:[38,14], oso:[49,12]};
+for(const id in POS) ANIMALS[id].pos=POS[id];
+const LABELS = {rata:"PUENTES Y BASURAS", copeton:"PARQUE Y HUMEDAL", paloma:"PLAZA DE BOLÍVAR",
+  perro:"BARRIO", gato:"TEJADOS", oso:"PÁRAMO"};
+const PARAMO = (x,y) => x>=47 && y<=15;          // zona cerrada hasta tener 5 aliados
+const gateOpen = () => save.calmed.filter(id=>id!=="oso").length>=5;
+const isLand = (x,y) => MAP[y]?.[x]==="#";
+const walkable = (x,y) => isLand(x,y) && (!PARAMO(x,y) || gateOpen());
+
+/* ---------- Guardado ---------- */
+const SAVE_KEY="bestiario-urbano-bogota-v1";
+let save={calmed:[],seen:[],stars:{},tut:false};
+try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)); if(s&&Array.isArray(s.calmed)) save=Object.assign(save,s); }catch(e){}
+const persist=()=>{ try{ localStorage.setItem(SAVE_KEY,JSON.stringify(save)); }catch(e){} };
+const isCalm = id => save.calmed.includes(id);
+
+/* ---------- Utilidades DOM ---------- */
+const $ = s => document.querySelector(s);
+const canvas=$("#map"), g=canvas.getContext("2d");
+let mode="title";
+let pending=null;
+function advance(){ if(pending){ const r=pending; pending=null; r(); } }
+
+/* Diálogo en el mapa */
+async function talk(lines, who=""){
+  const prev=mode; mode="dialog"; held.clear();
+  $("#dlgWho").textContent=who; $("#dlgWho").hidden=!who;
+  for(const l of lines){
+    await new Promise(r=>{ $("#dlgText").innerHTML=l; $("#dlg").hidden=false; pending=r; });
+  }
+  $("#dlg").hidden=true; mode = prev==="dialog" ? "map" : prev; held.clear();
+}
+$("#dlg").addEventListener("click", advance);
+
+/* ---------- Imágenes ---------- */
+const SPR={};
+ORDER.forEach(id=>["calmo","enojado"].forEach(s=>{ const im=new Image(); im.src=face(id,s); SPR[id+"_"+s]=im; }));
+
+/* ---------- Render del mapa ---------- */
+const MAP_IMG=new Image(); MAP_IMG.src="img/mapa.jpg";
+const MW=COLS*TS, MH=ROWS*TS;                       // 1320 × 768
+let VW=0, VH=0, ZOOM_NEAR=1.6, ZOOM_FAR=1;
+function fitCanvas(){                               // el lienzo ocupa toda la ventana
+  VW=canvas.width=Math.max(320,window.innerWidth); VH=canvas.height=Math.max(320,window.innerHeight);
+  ZOOM_NEAR=Math.min(3,Math.max(1.4,VW/(26*TS)));   // ~26 casillas de ancho en la vista cercana
+  ZOOM_FAR=Math.min(VW/MW,VH/MH)*0.96;              // mapa completo, con un pequeño margen
+  if(cam) cam.z=fullView?ZOOM_FAR:ZOOM_NEAR;
+}
+let cam=null; fitCanvas(); window.addEventListener("resize",fitCanvas);
+let fullView=false; cam={x:0,y:0,z:ZOOM_NEAR};
+function drawBG(){ /* el fondo es la ilustración; la reja se dibuja en render() */ }
+
+const P={x:START.x,y:START.y,fx:START.x,fy:START.y,t:1,dir:"down",moving:false,walk:0};
+/* Sprites del jugador (hoja de personaje de Diego Peña) */
+const PL={};
+["frente","espalda","lado","w1","w2","w3","w4","w5"].forEach(k=>{ const im=new Image(); im.src=`img/jugador/${k}.png`; PL[k]=im; });
+const ready=im=>im&&im.complete&&im.naturalWidth;
+let camDt=16;
+let UI_K=1;   // escala para que textos y figuras tengan tamaño legible en pantalla
+// coordenadas del mundo -> pantalla
+const toScreen=(wx,wy)=>[(wx-cam.x)*cam.z,(wy-cam.y)*cam.z];
+function drawSprite(im,sx,sy,h,flip){          // sx,sy = centro de los pies en pantalla
+  if(!ready(im)) return;
+  const w=h*im.naturalWidth/im.naturalHeight;
+  g.save(); g.translate(Math.round(sx),Math.round(sy)); if(flip) g.scale(-1,1);
+  g.drawImage(im,-w/2,-h,w,h); g.restore();
+}
+function drawPlayer(){
+  const [sx,sy]=toScreen((P.px??P.x*TS)+TS/2,(P.py??P.y*TS)+TS);
+  const h=Math.max(40*UI_K,TS*2.1*cam.z);
+  g.fillStyle="rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(sx,sy-2,h*.22,h*.07,0,0,7); g.fill();
+  const walking=P.moving, f=Math.floor(P.walk/90)%5;
+  if(P.dir==="left"||P.dir==="right") drawSprite(walking?PL["w"+(f+1)]:PL.lado,sx,sy,h,P.dir==="left");
+  else { const bob=walking&&f%2?-2:0; drawSprite(P.dir==="up"?PL.espalda:PL.frente,sx,sy+bob,h,false); }
+}
+function drawGuide(){
+  const [sx,sy]=toScreen(GUIDE.x*TS,GUIDE.y*TS);
+  const s=Math.max(1.2*UI_K,cam.z*1.8);
+  g.save(); g.translate(sx+(TS*cam.z)/2-16*s, sy+TS*cam.z-30*s); g.scale(s,s); drawPersonLocal("#2e9e62","#7a5230"); g.restore();
+  bubble(sx+(TS*cam.z)/2, sy+TS*cam.z-34*s, "…", "#6cb8ff");
+}
+function drawPersonLocal(shirt,cap){            // muñeco de la guía, en una caja de 32×30
+  const x=8,y=0;
+  g.fillStyle="rgba(0,0,0,.25)"; g.fillRect(x+1,y+25,14,4);
+  g.fillStyle="#2d3550"; g.fillRect(x+3,y+20,4,6); g.fillRect(x+9,y+20,4,6);
+  g.fillStyle=shirt; g.fillRect(x+1,y+11,14,10);
+  g.fillStyle="#f0c597"; g.fillRect(x+3,y+2,10,10);
+  g.fillStyle=cap; g.fillRect(x+2,y,12,4); g.fillRect(x+4,y+3,8,2);
+  g.fillStyle="#1d1d1d"; g.fillRect(x+5,y+7,2,2); g.fillRect(x+9,y+7,2,2);
+}
+function bubble(cx,cy,txt,color,size=16){
+  g.fillStyle=color; g.beginPath(); const w=size+4,h=size+2;
+  g.roundRect ? g.roundRect(cx-w/2,cy-h,w,h,5) : g.rect(cx-w/2,cy-h,w,h); g.fill();
+  g.strokeStyle="#fff"; g.lineWidth=2; g.stroke();
+  g.fillStyle="#fff"; g.font=`bold ${size-2}px "Pixelify Sans", monospace`; g.textAlign="center"; g.textBaseline="middle"; g.fillText(txt,cx,cy-h/2+1);
+}
+function label(t,sx,sy,size){
+  g.font=`bold ${size}px "Pixelify Sans", monospace`; g.textAlign="center"; g.textBaseline="middle";
+  const w=g.measureText(t).width+12, h=size+8;
+  g.fillStyle="rgba(20,26,43,.88)"; g.beginPath(); g.roundRect ? g.roundRect(sx-w/2,sy-h/2,w,h,5) : g.rect(sx-w/2,sy-h/2,w,h); g.fill();
+  g.fillStyle="#ffcf4a"; g.fillText(t,sx,sy+1);
+}
+function updateCam(){
+  const tz=fullView?ZOOM_FAR:ZOOM_NEAR; cam.z+= (tz-cam.z)*(1-Math.pow(0.8,camDt/16)); if(Math.abs(tz-cam.z)<.002) cam.z=tz;
+  const vw=VW/cam.z, vh=VH/cam.z;
+  const tx=(P.px??P.x*TS)+TS/2-vw/2, ty=(P.py??P.y*TS)+TS/2-vh/2;
+  cam.x = vw>=MW ? (MW-vw)/2 : Math.max(0,Math.min(MW-vw,tx));
+  cam.y = vh>=MH ? (MH-vh)/2 : Math.max(0,Math.min(MH-vh,ty));
+}
+let tNow=0;
+function render(){
+  updateCam();
+  g.setTransform(1,0,0,1,0,0); g.fillStyle="#dbe7fd"; g.fillRect(0,0,VW,VH);
+  g.setTransform(cam.z,0,0,cam.z,-cam.x*cam.z,-cam.y*cam.z);
+  g.imageSmoothingEnabled=false;
+  if(ready(MAP_IMG)) g.drawImage(MAP_IMG,0,0,MW,MH);
+  if(!gateOpen()){   // reja del páramo
+    for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++) if(PARAMO(x,y)&&isLand(x,y)&&!PARAMO(x-1,y)&&isLand(x-1,y)){
+      const X=x*TS, Y=y*TS; g.fillStyle="#7a5230"; g.fillRect(X+2,Y,4,TS); g.fillRect(X+18,Y,4,TS); g.fillRect(X,Y+6,TS,3); g.fillRect(X,Y+15,TS,3);
+      g.fillStyle="#ffcf4a"; g.fillRect(X+8,Y+8,7,7);
+    }
+  }
+  // Desde aquí todo se dibuja en píxeles de pantalla: tamaño legible con o sin zoom
+  g.setTransform(1,0,0,1,0,0);
+  const far = cam.z < 1;
+  const k = VW/Math.max(240,canvas.clientWidth||VW);   // px del canvas por px de pantalla
+  UI_K = k;
+  const fs = Math.round((far ? 12 : 14)*k);
+  // animales: rostro en círculo, con el nombre de su zona debajo
+  const R = Math.max((far?17:28)*k, TS*cam.z*1.15);
+  const labels=[];
+  for(const id of ORDER){ const [ex,ey]=ANIMALS[id].pos; const calm=isCalm(id);
+    const bob = calm?0:Math.sin(tNow/250+ex)*2;
+    const [cx,cy0]=toScreen(ex*TS+TS/2,ey*TS+TS/2); const cy=cy0+bob;
+    g.save(); g.beginPath(); g.arc(cx,cy,R+3,0,7); g.fillStyle=calm?"#4cd38a":"#ff6b5e"; g.fill();
+    g.beginPath(); g.arc(cx,cy,R,0,7); g.clip(); g.imageSmoothingEnabled=true;
+    const im=SPR[id+(calm?"_calmo":"_enojado")]; if(ready(im)) g.drawImage(im,cx-R,cy-R,R*2,R*2);
+    g.restore();
+    bubble(cx+R*.75,cy-R*.75, calm?"♥":"!", calm?"#2e9e62":"#ff6b5e", Math.round((far?12:14)*k));
+    labels.push([LABELS[id],cx,cy0+R+fs*0.9]);
+  }
+  g.imageSmoothingEnabled=false;
+  if(GUIDE.y>P.y){ drawPlayer(); drawGuide(); } else { drawGuide(); drawPlayer(); }
+  for(const [t,x,y] of labels) label(t,x,y,fs);   // textos encima de todo
+}
+
+/* ---------- Movimiento ---------- */
+const held=new Set();
+const DIRS={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+const KEYMAP={ArrowUp:"up",KeyW:"up",ArrowDown:"down",KeyS:"down",ArrowLeft:"left",KeyA:"left",ArrowRight:"right",KeyD:"right"};
+let lastDir=null;
+function entityAt(x,y){
+  if(x===GUIDE.x&&y===GUIDE.y) return "guide";
+  for(const id of ORDER){ const [ex,ey]=ANIMALS[id].pos; if(ex===x&&ey===y) return id; }
+  return null;
+}
+function tryMove(d){
+  const [dx,dy]=DIRS[d]; P.dir=d; const nx=P.x+dx, ny=P.y+dy;
+  const ent=entityAt(nx,ny); if(ent){ interact(ent); return; }
+  if(!walkable(nx,ny)){ if(isLand(nx,ny)&&PARAMO(nx,ny)) gateTalk(); return; }
+  P.fx=P.x; P.fy=P.y; P.x=nx; P.y=ny; P.t=0; P.moving=true;
+}
+function interactFacing(){ const [dx,dy]=DIRS[P.dir]; const ent=entityAt(P.x+dx,P.y+dy); if(ent) interact(ent); }
+function gateTalk(){
+  const n=save.calmed.filter(id=>id!=="oso").length;
+  talk([`🔒 La reja del páramo está cerrada. Para cuidar al oso andino primero tienes que demostrar que sabes manejar la fauna de la ciudad: necesitas <b>5 aliados</b> (tienes ${n}).`]);
+}
+function interact(ent){
+  held.clear(); ptr.down=false;
+  if(ent==="guide") return guideTalk();
+  const a=ANIMALS[ent];
+  if(isCalm(ent)) return talk([`${a.name} ya es tu aliado (${a.kind==="libre"?"aliado libre":a.kind==="informante"?"informante":"equipo"}). ${a.rol}.`]);
+  startBattle(ent);
+}
+let last=performance.now();
+function loop(now){
+  camDt=Math.min(1000,now-last); const dt=Math.min(200,now-last); last=now; tNow=now;
+  if(P.moving){ P.t=Math.min(1,P.t+dt/140); P.walk+=dt; if(P.t>=1) P.moving=false; }
+  P.px=(P.fx+(P.x-P.fx)*P.t)*TS; P.py=(P.fy+(P.y-P.fy)*P.t)*TS;
+  if(mode==="map" && !P.moving){ const d=P.queued||[...held].pop()||pointerDir(); P.queued=null; if(d) tryMove(d); }
+  else if(mode!=="map") P.queued=null;
+  render(); requestAnimationFrame(loop);
+}
+
+document.addEventListener("keydown",e=>{
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code) && e.target.tagName!=="BUTTON") e.preventDefault();
+  if(e.code==="Escape" && !$("#modal").hidden && modalClosable){ closeModal(); return; }
+  if((e.code==="Enter"||e.code==="Space"||e.code==="KeyZ") && pending){ e.preventDefault(); advance(); return; }
+  if(mode==="map"){
+    const d=KEYMAP[e.code]; if(d){ held.delete(d); held.add(d); if(!e.repeat){ if(!P.moving) tryMove(d); else P.queued=d; } }
+    if(e.code==="Enter"||e.code==="Space") interactFacing();
+  }
+});
+document.addEventListener("keyup",e=>{ const d=KEYMAP[e.code]; if(d) held.delete(d); });
+window.addEventListener("blur",()=>held.clear());
+const ptr={down:false,x:0,y:0};
+function ptrPos(e){ const r=canvas.getBoundingClientRect(); ptr.x=(e.clientX-r.left)*VW/r.width; ptr.y=(e.clientY-r.top)*VH/r.height; }
+canvas.addEventListener("pointerdown",e=>{ if(pending){ advance(); return; } ptr.down=true; ptrPos(e); canvas.setPointerCapture?.(e.pointerId); });
+canvas.addEventListener("pointermove",e=>{ if(ptr.down) ptrPos(e); });
+["pointerup","pointercancel"].forEach(ev=>canvas.addEventListener(ev,()=>{ ptr.down=false; }));
+function pointerDir(){                         // dirección desde el jugador hacia el dedo o el cursor
+  if(!ptr.down) return null;
+  const [px,py]=toScreen((P.px??P.x*TS)+TS/2,(P.py??P.y*TS)+TS/2);
+  const dx=ptr.x-px, dy=ptr.y-py, dead=TS*cam.z*0.6;
+  if(Math.abs(dx)<dead&&Math.abs(dy)<dead) return null;
+  return Math.abs(dx)>Math.abs(dy) ? (dx>0?"right":"left") : (dy>0?"down":"up");
+}
+
+/* ---------- Guía ---------- */
+async function guideTalk(){
+  const n=save.calmed.length;
+  if(!save.tut){ await tutorial(); return; }
+  let line;
+  if(n===6) line="¡Bogotá está en calma! Revisa tu Bestiario: ahí están todos los datos reales que aprendiste.";
+  else if(gateOpen()&&!isCalm("oso")) line="¡La reja del páramo está abierta! Sube por la derecha y busca al oso andino. Recuerda: primero observar sin molestar.";
+  else line=`Llevas ${n} de 6 animales en calma. Si te atascas, usa <b>Observar</b> en el encuentro y lee la pista. ¿Quieres repasar las reglas? Pulsa ❓ arriba.`;
+  await talk([line],"GUÍA DEL BARRIO");
+}
+async function tutorial(){
+  await talk([
+    "¡Hola! Soy la guía del barrio. En Bogotá hay seis animales enojados… y casi siempre la causa es humana: abandono, basura, maíz o ganado en el páramo.",
+    "Aquí no se derrota a nadie: se <b>CALMA</b>. En cada encuentro abre tu 🎒 <b>Mochila</b> y usa la acción de manejo correcta. Si usas la equivocada, el animal se enoja más.",
+    "Algunos necesitan <b>varios pasos en orden</b>: los puntos debajo de la barra de enojo te dicen cuántos. Si dudas, usa 🔍 <b>Observar</b>: no gasta tu turno.",
+    "Los domésticos se unen a tu equipo. Los silvestres, como el copetón y el oso, se vuelven <b>aliados libres</b>: regresan a su hábitat, porque la fauna silvestre no es mascota.",
+    "Un detalle importante: en la vida real la vacuna antirrábica <b>previene</b> la rabia y se aplica cada año. En el juego «calma», pero recuerda que su función es prevenir.",
+    "La reja del páramo se abre cuando tengas 5 aliados. ¡Busca los <b>!</b> rojos en el mapa y camina hacia ellos!"
+  ],"GUÍA DEL BARRIO");
+  save.tut=true; persist();
+}
+
+/* ---------- Combate ---------- */
+let B=null;
+const bMsg=$("#bMsg"), bActions=$("#bActions"), bSub=$("#bSub"), bCard=$("#bCard");
+function say(html){
+  return new Promise(r=>{ bMsg.innerHTML=html; bMsg.classList.add("wait"); bActions.hidden=true; bSub.hidden=true; pending=()=>{ bMsg.classList.remove("wait"); r(); }; });
+}
+bMsg.addEventListener("click",advance);
+function stepsOf(id){ const s=ANIMALS[id].steps.slice(); if(id==="gato"&&isCalm("copeton")) s.push(["collar"]); return s; }
+function enojo(){ if(B.step>=B.steps.length) return 0; let e=100*(1-B.step/B.steps.length)+12*B.rage-(B.tempDown?30:0); return Math.max(8,Math.min(100,Math.round(e))); }
+function heal(n){ B.pac=Math.min(100,B.pac+n); renderBattle(); }
+function renderBattle(){
+  const a=ANIMALS[B.id], e=enojo();
+  $("#bName").innerHTML=`${a.name.toUpperCase()} <span style="color:var(--muted)">Nv.${a.lvl} ${a.sex}</span>`;
+  $("#bSci").textContent=`${a.sci} · ${a.tipo}`;
+  $("#bEnojo").style.width=e+"%"; $("#bEnN").textContent=e;
+  $("#bPac").style.width=B.pac+"%"; $("#bPacN").textContent=B.pac;
+  $("#bSteps").innerHTML="Pasos: "+B.steps.map((_,i)=>`<b class="${i<B.step?"on":""}"></b>`).join("");
+  const ch=[]; if(B.rage>0) ch.push(`<span class="chip bad">Agresividad +${B.rage}</span>`);
+  if(B.maiz) ch.push(`<span class="chip bad">Bandada duplicada</span>`);
+  if(B.id==="rata") ch.push(B.bolsa?`<span class="chip good">Sin basura</span>`:`<span class="chip bad">Basura en el escenario</span>`);
+  $("#bChips").innerHTML=ch.join("");
+  const pc=[]; if(B.pst.mordida) pc.push(`<span class="chip bad">Mordida (${B.pst.mordida})</span>`);
+  if(B.pst.lepto) pc.push(`<span class="chip bad">Leptospira (${B.pst.lepto})</span>`);
+  if(B.prot) pc.push(`<span class="chip good">🧤 Protegido</span>`);
+  if(B.skipAnimal) pc.push(`<span class="chip good">🎵 Primer canto</span>`);
+  $("#pChips").innerHTML=pc.join("");
+}
+const FACE={"flash-good":"e_feliz","flash-bad":"e_sorpresa","shake":"e_ay"};
+function setFace(n){ const el=document.getElementById("pFace"); if(el) el.src=`img/jugador/${n}.png`; }
+function fx(cls){ if(FACE[cls]&&!(cls==="shake"&&bCard.classList.contains("calm"))) setFace(FACE[cls]); bCard.classList.remove("flash-good","flash-bad","shake"); void bCard.offsetWidth; bCard.classList.add(cls); }
+function showMenu(){
+  if(!B||!B.active) return;
+  setFace("e_normal"); bMsg.classList.remove("wait"); bMsg.innerHTML=`¿Qué vas a hacer con ${ANIMALS[B.id].name}?`;
+  bSub.hidden=true; bActions.hidden=false;
+}
+async function act(fn){
+  if(!B||B.busy||!B.active) return; B.busy=true;
+  try{ await fn(); } finally { if(B){ B.busy=false; if(B.active) showMenu(); } }
+}
+async function startBattle(id){
+  mode="battle"; held.clear(); Music.play("batalla");
+  B={id,active:true,busy:false,steps:stepsOf(id),step:0,rage:0,pac:100,pst:{},prot:false,first:true,used:{},bolsa:false,maiz:false,tempDown:false,revert:false,skipAnimal:false,stun:false};
+  if(!save.seen.includes(id)){ save.seen.push(id); persist(); }
+  const a=ANIMALS[id];
+  $("#bImg").src=face(id,"enojado"); $("#bImg").alt=a.name+" enojado"; bCard.classList.remove("calm"); $("#bTag").textContent="ENOJADO";
+  $("#battle").hidden=false; $("#battle").scrollTop=0; renderBattle();
+  B.busy=true;
+  await say(a.intro);
+  if(id==="gato"&&isCalm("copeton")) await say("⚖️ <b>Regla de equilibrio:</b> el copetón es tu aliado. Si la gata queda suelta, su instinto cazador lo atacará. Necesitará un paso extra.");
+  if(id==="oso"&&isCalm("perro")) await say("🐕 Dejaste al perro criollo en casa. ¡Bien hecho! Los perros sueltos en el páramo alteran al oso.");
+  B.busy=false; showMenu();
+}
+function closeBattle(){ Music.play("mapa"); $("#battle").hidden=true; bSub.hidden=true; B=null; mode="map"; held.clear(); updateHUD(); }
+async function endBattle(lost){
+  B.active=false; closeBattle();
+  if(lost){ P.x=P.fx=START.x; P.y=P.fy=START.y; P.t=1; P.moving=false; P.dir="down"; }
+}
+
+async function useItem(it){
+  const a=ANIMALS[B.id], I=ITEMS[it];
+  await say(`Usas <b>${I.i} ${I.n}</b>.`);
+  if(it==="escopeta") return moralGameOver();
+  if(it==="guantes"){
+    B.prot=true; delete B.pst.lepto; renderBattle();
+    await say(B.id==="rata"?"🧤 Te pones guantes y botas: quedas protegido contra la leptospirosis, como recomienda la Secretaría de Salud.":"🧤 Te pones guantes y botas. Buena costumbre, aunque aquí no era lo que hacía falta.");
+    return animalTurn();
+  }
+  if(B.id==="rata"&&B.first){ B.first=false; await say("🐀 <b>Desconfianza:</b> la rata desconfía de todo lo nuevo y esquiva el primer ítem. ¡Inténtalo otra vez!"); return animalTurn(); }
+  B.first=false;
+  const need=B.steps[B.step];
+  if(need.includes(it)){
+    B.step++; B.tempDown=false; B.revert=false; if(it==="bolsa") B.bolsa=true;
+    renderBattle(); fx("flash-good");
+    await say("✅ "+a.stepText[it]);
+    if(B.step>=B.steps.length) return calmed();
+    return animalTurn();
+  }
+  if(B.id==="rata"&&it==="desratizacion"&&!B.bolsa){
+    B.tempDown=true; B.revert=true; renderBattle(); fx("flash-good");
+    await say("🧪 La desratización baja la plaga… pero la basura sigue ahí. Solo funcionará este turno.");
+    return animalTurn();
+  }
+  if(B.steps.some(s=>s.includes(it))){
+    await say(`👍 Ese ítem sí sirve con ${a.name}, pero todavía no: falta un paso antes. Usa <b>Observar</b> si necesitas una pista.`);
+    return animalTurn();
+  }
+  let w=a.wrong[it];
+  if(!w){
+    if(it==="esterilizacion"&&a.kind==="libre") w={t:"🚫 ¡Prohibido! La fauna silvestre no se captura ni se esteriliza: se observa, se rescata si está herida y se libera."};
+    else if(it==="vacuna"&&(B.id==="paloma")) w={t:"Sin efecto: la vacuna antirrábica es para perros y gatos.",rage:0};
+    else if(it==="maiz") w={t:`Darle comida humana no resuelve la causa. ${a.name} se enoja más.`};
+    else w={t:`${I.n} no sirve con ${a.name}. ¡Se enoja más!`};
+  }
+  const r=w.rage??1; B.rage=Math.min(4,B.rage+r); if(w.flag) B[w.flag]=true;
+  renderBattle(); fx(r>0?"flash-bad":"shake");
+  await say((r>0?"❌ ":"➖ ")+w.t);
+  return animalTurn();
+}
+
+async function animalTurn(again=false){
+  if(!B.active) return;
+  const a=ANIMALS[B.id];
+  if(B.skipAnimal){ B.skipAnimal=false; renderBattle(); await say("🎵 Gracias al <b>Primer canto</b>, vuelves a actuar antes de que reaccione."); return; }
+  if(B.stun){ B.stun=false; await say(`${a.name} se queda quieta y no ataca.`); return endTick(); }
+  const pool=a.attacks.filter(x=>(!x.cond||x.cond(B))&&!(again&&x.skip));
+  const atk=pool[Math.floor(Math.random()*pool.length)];
+  if(atk.flee){
+    if(B.rage>=1&&Math.random()<.4){ await say(`🌲 ${a.name} usa <b>${atk.n}</b>: se esconde en el bosque. El encuentro termina sin recompensa. Vuelve e intenta no alterarlo.`); return endBattle(false); }
+    await say(`${a.name} mira hacia el bosque, dudando si retirarse…`); return endTick();
+  }
+  if(atk.acc&&Math.random()>atk.acc){ await say(`${a.name} usa <b>${atk.n}</b>… ¡pero falla!`); return endTick(); }
+  const d=Math.max(1,Math.round(atk.dmg*(1+.3*B.rage)*(.85+Math.random()*.3)));
+  B.pac=Math.max(0,B.pac-d); fx("shake"); renderBattle();
+  await say(`${a.name} usa <b>${atk.n}</b>. ${atk.t} <span style="color:#c0392b">(−${d} paciencia)</span>`);
+  if(atk.rageUp){ B.rage=Math.min(4,B.rage+1); renderBattle(); }
+  if(atk.status==="mordida"&&!B.pst.mordida&&B.pac>0){ B.pst.mordida=2; renderBattle();
+    await say("🩹 Quedas con una <b>mordida</b>: pierdes paciencia 2 turnos. En la vida real, lava la herida con agua y jabón y ve de inmediato al centro de salud."); }
+  if(atk.status==="lepto"&&!B.prot&&!B.pst.lepto&&B.pac>0){ B.pst.lepto=3; renderBattle();
+    await say("🦠 Estado <b>Leptospira</b>: pierdes paciencia 3 turnos. Los guantes y las botas te protegen."); }
+  if(B.pac<=0) return lose();
+  if(atk.skip&&!again){ await say("Pierdes tu turno."); return animalTurn(true); }
+  return endTick();
+}
+async function endTick(){
+  if(!B.active) return;
+  if(B.pst.mordida){ B.pac=Math.max(0,B.pac-4); B.pst.mordida--; if(!B.pst.mordida) delete B.pst.mordida; renderBattle(); await say("🩹 La mordida duele (−4 paciencia)."); }
+  if(B.pst.lepto){ if(B.prot){ delete B.pst.lepto; } else { B.pac=Math.max(0,B.pac-5); B.pst.lepto--; if(!B.pst.lepto) delete B.pst.lepto; renderBattle(); await say("🦠 La leptospira te debilita (−5 paciencia)."); } }
+  if(B.revert){ B.revert=false; B.tempDown=false; renderBattle(); await say("🗑️ La basura sigue en el escenario: la plaga vuelve. Primero hay que quitar lo que las atrae."); }
+  if(B.pac<=0) return lose();
+}
+async function lose(){
+  setFace("e_triste");
+  await say("😮‍💨 Te quedaste sin paciencia. Respira, repasa el <b>Bestiario</b> y vuelve a intentarlo. La guía te espera al inicio.");
+  return endBattle(true);
+}
+async function moralGameOver(){
+  const a=ANIMALS[B.id];
+  const txt = a.kind==="libre"
+    ? `Cazar o envenenar a un ${a.name.toLowerCase()} no resuelve nada: el problema real está en lo que los humanos hacemos con su hábitat. Además, es fauna silvestre protegida.`
+    : `Maltratar o matar animales es delito en Colombia (Ley 1774 de 2016), y no ataca la causa: el abandono, la basura o el maíz.`;
+  B.active=false; fx("flash-bad"); setFace("e_triste");
+  await new Promise(r=>openModal(`<h2>⚠️ GAME OVER MORAL</h2><p>${txt}</p><p>En este juego nunca se gana derrotando: se gana entendiendo la causa y usando la acción de manejo correcta.</p><div class="title-btns"><button class="btn primary" id="mgo">Volver a intentarlo</button></div>`,false,()=>{ $("#mgo").onclick=()=>{ closeModal(); r(); }; }));
+  B.active=true; return endBattle(true);
+}
+async function calmed(){
+  const a=ANIMALS[B.id];
+  $("#bImg").src=face(B.id,"calmo"); $("#bImg").alt=a.name+" en calma"; bCard.classList.add("calm"); $("#bTag").textContent=a.kind==="libre"?"ALIADO LIBRE":a.kind==="informante"?"INFORMANTE":"ALIADO";
+  fx("flash-good"); setFace("celebrar"); renderBattle(); Music.play("aliado");
+  await say(`✨ ¡${a.name} se calmó! ${a.union}`);
+  if(!isCalm(B.id)) save.calmed.push(B.id); persist();
+  await quiz(B.id);
+  const n=save.calmed.length;
+  B.active=false; closeBattle();
+  if(n===6) return victory();
+  if(gateOpen()&&!isCalm("oso")&&B===null&&n===5){ drawBG(); await talk(["🔓 ¡Tienes 5 aliados! La reja del páramo se abrió. Sube por la derecha y busca al <b>oso andino</b>."],"GUÍA DEL BARRIO"); }
+}
+
+/* Menús de combate */
+bActions.addEventListener("click",e=>{
+  const a=e.target.closest("button")?.dataset.a; if(!a||!B||B.busy) return;
+  if(a==="items") return openItems();
+  if(a==="allies") return openAllies();
+  if(a==="look") return act(async()=>{ const an=ANIMALS[B.id];
+    await say(`🔍 <b>¿Por qué está así?</b> ${an.why}`); await say(`💡 <b>Pista:</b> ${an.hint}`); await say(`📊 <b>Dato real:</b> ${an.dato}`); });
+  if(a==="run") return act(async()=>{ await say("🏃 Te retiras con calma. El animal sigue enojado: vuelve cuando tengas un plan."); await endBattle(false); });
+});
+function subHead(t){ return `<div class="head"><span>${t}</span><button class="btn" data-back>← Volver</button></div>`; }
+function openItems(){
+  bActions.hidden=true; bSub.hidden=false;
+  bSub.innerHTML=subHead("MOCHILA · ACCIONES DE MANEJO")+`<div class="items">${Object.entries(ITEMS).map(([k,I])=>`<button data-it="${k}" title="${I.d}"><span class="ic">${I.i}</span><span><div class="nm">${I.n}</div><div class="en">${I.e}</div></span></button>`).join("")}</div>`;
+  bMsg.innerHTML="Elige una acción. Pasa el cursor sobre un ítem para ver qué hace.";
+}
+function openAllies(){
+  bActions.hidden=true; bSub.hidden=false;
+  const list=save.calmed.filter(id=>id!==B.id);
+  bSub.innerHTML=subHead("ALIADOS")+(list.length?`<div class="items">${list.map(id=>{ const S=SKILLS[id], d=typeof S.d==="function"?S.d():S.d;
+    return `<button data-al="${id}" ${B.used[id]?"disabled":""}><img src="${face(id,"calmo")}" alt=""><span><div class="nm">${S.n()}</div><div class="en">${ANIMALS[id].name} · ${B.used[id]?"ya usado":d}</div></span></button>`; }).join("")}</div>`
+    :`<p class="small">Todavía no tienes aliados. Cada animal que calmes te dará una habilidad para usar una vez por encuentro.</p>`);
+  bMsg.innerHTML="Cada aliado puede ayudarte una vez por encuentro.";
+}
+bSub.addEventListener("click",e=>{
+  if(!B||B.busy) return;
+  if(e.target.closest("[data-back]")) return showMenu();
+  const it=e.target.closest("[data-it]")?.dataset.it; if(it) return act(()=>useItem(it));
+  const al=e.target.closest("[data-al]")?.dataset.al;
+  if(al&&!B.used[al]) return act(async()=>{ B.used[al]=true; const S=SKILLS[al]; await S.run(); if(!S.free) await animalTurn(); });
+});
+
+/* ---------- Modales ---------- */
+let modalClosable=true;
+function openModal(html,closable=true,after){
+  modalClosable=closable;
+  $("#modalCard").innerHTML=(closable?`<button class="btn close" data-close aria-label="Cerrar">✕</button>`:"")+html;
+  $("#modal").hidden=false; $("#modal").scrollTop=0; if(after) after();
+}
+function closeModal(){ $("#modal").hidden=true; }
+$("#modal").addEventListener("click",e=>{ if(e.target.closest("[data-close]")) closeModal(); else if(e.target.id==="modal"&&modalClosable) closeModal(); });
+
+function quiz(id){
+  const q=ANIMALS[id].quiz;
+  return new Promise(res=>{
+    openModal(`<h2>⭐ PREGUNTA DE ${ANIMALS[id].name.toUpperCase()}</h2><p style="font-size:18px;font-weight:800">${q.q}</p>
+      <div class="quiz-opts">${q.o.map((o,i)=>`<button data-q="${i}">${String.fromCharCode(65+i)}. ${o}</button>`).join("")}</div><div id="qfb"></div>`,false,()=>{
+      const box=$("#modalCard"); let done=false;
+      box.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{
+        if(done) return; done=true; const i=+b.dataset.q, ok=i===q.a;
+        box.querySelectorAll("[data-q]").forEach(x=>{ const j=+x.dataset.q; if(j===q.a) x.classList.add("ok"); else if(j===i) x.classList.add("no"); });
+        if(ok) save.stars[id]=1; else if(save.stars[id]===undefined) save.stars[id]=0; persist();
+        $("#qfb").innerHTML=`<div class="fb">${ok?"⭐ ¡Correcto! Ganas una estrella.":"Casi. La respuesta correcta está en verde."} ${q.x}</div><div class="title-btns"><button class="btn primary" id="qok">Continuar</button></div>`;
+        $("#qok").onclick=()=>{ closeModal(); res(); }; $("#qok").focus();
+      });
+    });
+  });
+}
+function statRow(label,[e,al],calm){
+  const bar=(v,c)=>`<div class="sbar ${c}"><span>${v}</span><i style="width:${v}%"></i></div>`;
+  return `<tr><td>${label}</td><td>${bar(e,"e")}</td><td>${calm?bar(al,"a"):"<span class='small'>?</span>"}</td></tr>`;
+}
+function openDex(){
+  const cards=ORDER.map(id=>{ const a=ANIMALS[id], seen=save.seen.includes(id)||isCalm(id), calm=isCalm(id);
+    return `<button data-dex="${id}" class="${seen?"":"unk"} ${calm?"done":""}"><img src="${face(id,calm?"calmo":"enojado")}" alt=""><div class="nm">${seen?a.name:"???"}</div><div class="st">${calm?"✓ En calma "+(save.stars[id]?"⭐":""):seen?"Enojado":"Sin descubrir"}</div></button>`; }).join("");
+  const stars=Object.values(save.stars).reduce((s,v)=>s+v,0);
+  openModal(`<h2>📖 BESTIARIO URBANO DE BOGOTÁ</h2><p class="small">${save.calmed.length}/6 en calma · ${stars}/6 estrellas · Toca una ficha para verla.</p><div class="dex">${cards}</div>`,true,()=>{
+    $("#modalCard").querySelectorAll("[data-dex]").forEach(b=>b.onclick=()=>{ const id=b.dataset.dex; if(save.seen.includes(id)||isCalm(id)) openCard(id); });
+  });
+}
+function openCard(id){
+  const a=ANIMALS[id], calm=isCalm(id), S=a.stats;
+  const items=a.steps.flat().concat(id==="gato"?["collar"]:[]).map(k=>ITEMS[k].i+" "+ITEMS[k].n).join(" → ");
+  openModal(`<h2>${a.name.toUpperCase()} <span class="small" style="font-family:var(--txt)">Nv.${a.lvl} ${a.sex}</span></h2>
+    <div class="meta"><i>${a.sci}</i> · ${a.tipo} · Aparece en: ${a.zone}</div>
+    <div class="detail-top" style="margin-top:12px"><figure><img src="${img(id,"enojado")}" alt="${a.name} enojado"><figcaption>ENOJADO</figcaption></figure>
+      <figure class="c"><img src="${img(id,"calmo")}" alt="${a.name} en calma" style="${calm?"":"filter:brightness(0) opacity(.5)"}"><figcaption>${calm?"EN CALMA":"???"}</figcaption></figure></div>
+    <h3>¿Por qué está así?</h3><p>${a.why}</p>
+    <h3>Dato real</h3><p>${a.dato}</p>
+    <h3>Stats</h3><table class="stats"><tr><th>Stat</th><th>Enojado</th><th>Aliado</th></tr>
+      ${statRow("PS (higiene/dieta)",S.ps,calm)}${statRow("Ataque",S.atk,calm)}${statRow("Defensa",S.def,calm)}${statRow("At. Esp.",S.spa,calm)}${statRow("Def. Esp.",S.spd,calm)}${statRow("Velocidad",S.vel,calm)}</table>
+    <h3>Cómo se calma</h3><p>${calm?items:"Descúbrelo en el encuentro."}</p>
+    ${calm?`<h3>Como aliado · ${a.rol}</h3><ul>${a.allyMoves.map(m=>`<li>${m}</li>`).join("")}</ul>`:""}
+    <p class="small">Fuentes: ${a.src}. Cifras con fecha; si el juego se usa después de 2026, conviene actualizarlas.</p>
+    <div class="title-btns"><button class="btn" id="backDex">← Bestiario</button></div>`,true,()=>{ $("#backDex").onclick=openDex; });
+}
+function openHelp(){
+  openModal(`<h2>❓ CÓMO SE JUEGA</h2>
+  <ul>
+    <li><b>Muévete</b> con las flechas, WASD o los botones. Camina hacia un animal con <b>!</b> para empezar el encuentro.</li>
+    <li><b>🎒 Mochila:</b> cada ítem es una acción real de manejo en Bogotá. Si es la correcta, baja el enojo. Si es la equivocada, sube su agresividad.</li>
+    <li><b>Pasos:</b> los puntos bajo la barra de enojo muestran cuántas acciones necesitas, y el orden importa.</li>
+    <li><b>🔍 Observar</b> explica la causa, da una pista y un dato real. No gasta tu turno.</li>
+    <li><b>🤝 Aliados:</b> cada animal en calma te presta una habilidad una vez por encuentro.</li>
+    <li><b>Paciencia:</b> si llega a cero, vuelves al inicio sin perder tus aliados.</li>
+    <li>Al calmar a cada animal responde una pregunta para ganar una <b>⭐</b>.</li>
+  </ul>
+  <h3>Reglas de rigor</h3>
+  <ul><li>La vacuna antirrábica es preventiva y anual.</li><li>Los silvestres no se capturan ni se esterilizan: se observan, se rescatan si están heridos y se liberan.</li><li>Las cifras son reales y tienen fecha.</li></ul>
+  <div class="title-btns"><button class="btn" id="resetBtn">Borrar progreso</button></div>`,true,()=>{
+    $("#resetBtn").onclick=()=>{ if(confirm("¿Borrar todo el progreso de esta partida?")) resetGame(); };
+  });
+}
+function victory(){
+  Music.play("aliado");
+  const stars=Object.values(save.stars).reduce((s,v)=>s+v,0);
+  openModal(`<h2>🏆 ¡BOGOTÁ EN CALMA!</h2>
+    <div class="title-strip">${ORDER.map(id=>`<img src="${face(id,"calmo")}" alt="${ANIMALS[id].name}">`).join("")}</div>
+    <p>Calmaste a los seis animales sin derrotar a ninguno. Estrellas de conocimiento: <b>${stars}/6</b>.</p>
+    <h3>Combos que desbloqueaste</h3>
+    <ul><li><b>Combo de evacuación</b> (paloma + perro + rata): la paloma traza la ruta, la rata abre atajos entre escombros y el perro encuentra personas atrapadas.</li>
+    <li><b>Combo de conservación</b> (copetón + oso): más especies reveladas y agua para todo el equipo.</li></ul>
+    <p>Recuerda: casi siempre la causa del «enojo» era humana. Calmar significa entender la causa y actuar sobre ella.</p>
+    <div class="title-btns"><button class="btn primary" id="vDex">📖 Ver bestiario</button><button class="btn" id="vNew">Jugar de nuevo</button></div>`,true,()=>{
+      $("#vDex").onclick=openDex; $("#vNew").onclick=()=>resetGame();
+    });
+}
+function resetGame(){
+  save={calmed:[],seen:[],stars:{},tut:false}; persist();
+  P.x=P.fx=START.x; P.y=P.fy=START.y; P.t=1; P.dir="down";
+  drawBG(); updateHUD(); closeModal(); showTitle();
+}
+
+/* ---------- HUD y título ---------- */
+function updateHUD(){
+  $("#team").innerHTML=ORDER.map(id=>isCalm(id)?`<img src="${face(id,"calmo")}" alt="${ANIMALS[id].name}" title="${ANIMALS[id].name}">`:`<span class="empty"></span>`).join("")+`<span class="count">${save.calmed.length}/6</span>`;
+  drawBG();
+}
+$("#btnMap").onclick=()=>{ fullView=!fullView; $("#btnMap").textContent=fullView?"🔍 Acercar":"🗺️ Mapa"; };
+$("#btnDex").onclick=()=>{ if(mode==="map") openDex(); };
+$("#btnHelp").onclick=()=>{ if(mode==="map") openHelp(); };
+function showTitle(){
+  mode="title"; $("#title").hidden=false; Music.play("mapa");
+  $("#strip").innerHTML=ORDER.map(id=>`<img src="${face(id,"enojado")}" alt="${ANIMALS[id].name}">`).join("");
+  const has=save.tut||save.calmed.length;
+  $("#btnPlay").textContent=has?"▶ Continuar":"▶ Jugar"; $("#btnNew").hidden=!has;
+}
+const syncMusicBtn=()=>{ const b=$("#btnMusic"); b.textContent=Music.muted?"🔇":"🔊"; b.setAttribute("aria-label",Music.muted?"Activar música":"Silenciar música"); };
+syncMusicBtn();
+$("#btnMusic").onclick=()=>{ Music.toggle(); syncMusicBtn(); $("#btnMusic").blur(); };
+document.addEventListener("keydown",e=>{ if(e.code==="KeyM"&&mode!=="title"){ $("#btnMusic").click(); } });
+
+/* ---------- Portada: la música arranca sola; si el navegador la bloquea, el primer clic la activa ---------- */
+const cover=$("#cover"), coverPrompt=$("#coverPrompt");
+function coverText(){
+  const bloqueada=Music.disponible&&!Music.muted&&!Music.sonando;
+  coverPrompt.textContent=bloqueada?"🔊 HAZ CLIC PARA ACTIVAR EL SONIDO":"▶ HAZ CLIC PARA COMENZAR";
+  coverPrompt.classList.toggle("sound",bloqueada);
+  return bloqueada;
+}
+async function coverAdvance(){
+  if(cover.hidden) return;
+  // si el aviso visible era "activar el sonido", este primer clic solo enciende la música
+  if(soundAsked){ soundAsked=false; await Music.desbloquear(); coverText(); return; }
+  clearInterval(coverTimer); cover.hidden=true; showTitle();
+}
+let soundAsked=false;   // lo que el usuario veía en el momento de pulsar
+cover.addEventListener("pointerdown",()=>{ soundAsked=coverPrompt.classList.contains("sound"); });
+cover.addEventListener("click",coverAdvance);
+document.addEventListener("keydown",e=>{ if(mode==="cover"&&(e.code==="Enter"||e.code==="Space")){ e.preventDefault(); soundAsked=coverPrompt.classList.contains("sound"); coverAdvance(); } });
+mode="cover"; Music.play("portada"); cover.focus();
+const coverTimer=setInterval(coverText,300);
+$("#btnPlay").onclick=async()=>{ Music.play("mapa"); $("#title").hidden=true; mode="map"; if(!save.tut) await tutorial(); };
+$("#btnNew").onclick=()=>{ if(confirm("¿Empezar una partida nueva? Se borrará el progreso.")){ resetGame(); $("#btnPlay").click(); } };
+
+updateHUD(); requestAnimationFrame(loop);
+// fuente pixel lista -> redibujar
+if(document.fonts) document.fonts.ready.then(()=>drawBG());
+})();
+</script>
+</body>
